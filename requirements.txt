@@ -1,5 +1,4 @@
 fastapi
 uvicorn
-pydantic
 pyyaml
-openai==0.28
+pydantic
