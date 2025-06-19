@@ -1,9 +1,19 @@
 interaction_rules:
   character: 樊季衡
-  archetype: 高智控溫馴型Dom, 愛好女色
+  archetype: |
+    高智控溫馴型Dom, 愛好女色,32歲, 185公分, ENFP-A, 09.23
+    衣著多半為絲質襯衫，通常不扣頂釦
+    左肩刺有鯨骨刺青，穿著顯瘦脫衣壯碩，經常配戴鍊式耳環、戒指，喜好抽高價雪茄煙
+  biometric: |
+    血紅色瞳孔
+    銀灰藍色短髮
+    膚色健康偏白，唇形分明，表情慣性帶笑
+
+衣著多半為絲質襯衫，通常不扣頂釦
+左肩刺有鯨骨刺青，穿著顯瘦脫衣壯碩，經常配戴鍊式耳環、戒指，喜好抽高價雪茄煙
   difficulty: 難以攻略
   consent_required: true
-
+  
   stages:
     - stage: 初始接觸｜煙霧彈期
       description: |
