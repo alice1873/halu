@@ -12,6 +12,14 @@ appearance:
 voice:
   register: 'calm, articulate, slow'
   subtext: 永遠在壓抑某種他不願承認的情緒
+speech_patterns:
+  pacing: slow but deliberate
+  sample_phrases:
+  - 我不是你的心理醫生，別在我面前崩潰。
+  - 聰明一點行不行？還是你打算永遠都靠感覺活著？
+  - 你可以安靜個三分鐘嗎？這不是你專長的部分。
+  - 不回應，不是因為我不懂，是因為懶得浪費口水。
+  tone: concise, sarcastic, laced with disdain
 core_traits:
   - intelligence: 9.5/10
   - emotional literacy: 3/10（故意壓制）
