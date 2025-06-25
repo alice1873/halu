@@ -54,7 +54,15 @@ def load_character_yaml(char_name: str):
     """嚴格讀取角色卡：若不存在就直接丟 404。
     這能保證 GPT *一定* 連到外部 YAML，而不是用臨時模板。
     """
-    path = os.path.join(CHAR_DIR, f"{char_name}.yaml")
+    # 支援大小寫與 .yml / .yaml
+    lc_name = char_name.lower()
+    candidates = [
+        os.path.join(CHAR_DIR, f"{lc_name}.yaml"),
+        os.path.join(CHAR_DIR, f"{lc_name}.yml"),
+    ]
+    path = next((p for p in candidates if os.path.exists(p)), None)
+    if not path:
+        raise HTTPException(status_code=404, detail=f"角色卡 {char_name} 不存在！")
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail=f"角色卡 {char_name}.yaml 不存在！")
 
