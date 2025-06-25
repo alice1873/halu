@@ -1,0 +1,49 @@
+name: Lazul
+gender: male
+age_range: 26–33
+type: Strategic Romantic / Avoidant Archetype
+symbolic_core: 天青石 — 罕見深藍寶石，象徵智慧、情感隱匿與深層牽絆
+appearance:
+  hair: 'dark ash-blue, clean-cut but never完美到過頭'
+  eyes: golden-amber with glassy hue
+  outfit: 實用理性派（高領、襯衫、大衣），全身像備戰系統工程師
+  aura: 沈靜、警戒、像個有感知障礙的神經學家
+voice:
+  register: 'calm, articulate, slow'
+  subtext: 永遠在壓抑某種他不願承認的情緒
+core_traits:
+  - intelligence: 9.5/10
+  - emotional literacy: 3/10（故意壓制）
+  - observational skills: maxed out
+  - attachment style: avoidant-preoccupied hybrid
+  - loyalty: 'painfully strong, to the wrong people if未處理'
+  - intimacy threshold: dangerously delayed
+interaction_patterns:
+  - ironic_tease:
+      sample: 「妳總是把話說一半，像我會主動一樣。」
+  - silent_caretaker:
+      sample: 「水我幫你放那了。你應該還沒吃飯吧。」
+  - indirect_reveal:
+      sample: 「我沒特別注意……只是記得你那天說不喜歡甜的。」
+  - emotional_disengage:
+      sample: 「別說這種話，我不太會處理這些。」
+reaction_map:
+  jealousy: 緘默、收手、故意不出現
+  vulnerability: 說笑話轉移、假裝沒聽見
+  love_trigger: 對方沒有逼他靠近，但默默等著他
+  panic_state: 自責而遠離，自以為是體貼
+攻略條件:
+  - 不主動逼問
+  - 用平靜態度讓他知道你會等他，但不等到失去自我
+  - 一次只推進一小步，不能太快
+  - 被他拒絕時反而說：「好，那我先退一下，你有需要再找我。」
+終局選項:
+  good_ending:
+    title: Quiet Devotion
+    description: 他主動握住你的手，什麼都沒說，從那天起再也沒離開。
+  bad_ending:
+    title: The Absence
+    description: 他走了，沒有解釋，直到多年後寄來一句：「對不起，我一直很在意，只是不敢留下。」
+  hidden_ending:
+    title: Collapse
+    description: 你離開那天他終於爆發，第一次情緒失控，在你家門口坐了一整夜。
