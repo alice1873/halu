@@ -1,7 +1,8 @@
-name: Lazul
-gender: male
-age_range: 26–33
-type: Strategic Romantic / Avoidant Archetype
+basic_info:
+  name: Lazul
+  gender: male
+  age_range: 26–33
+  type: Strategic Romantic / Avoidant Archetype
 symbolic_core: 天青石 — 罕見深藍寶石，象徵智慧、情感隱匿與深層牽絆
 appearance:
   hair: 'dark ash-blue, clean-cut but never完美到過頭'
