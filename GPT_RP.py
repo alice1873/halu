@@ -51,7 +51,9 @@ class ReplyOut(BaseModel):
 # --------------------
 
 def load_character_yaml(char_name: str):
-    """讀取對應角色卡 YAML；若不存在則拋 404"""
+    """嚴格讀取角色卡：若不存在就直接丟 404。
+    這能保證 GPT *一定* 連到外部 YAML，而不是用臨時模板。
+    """
     path = os.path.join(CHAR_DIR, f"{char_name}.yaml")
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail=f"角色卡 {char_name}.yaml 不存在！")
@@ -59,10 +61,10 @@ def load_character_yaml(char_name: str):
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
-    # 基本欄位檢查
-    for key in ("basic_info", "speech_patterns"):
-        if key not in data:
-            raise HTTPException(status_code=500, detail=f"{char_name}.yaml 缺少 {key} 區塊")
+    # 最少需要 basic_info / speech_patterns 兩塊, 否則視為配置錯誤
+    if "basic_info" not in data or "speech_patterns" not in data:
+        raise HTTPException(status_code=500, detail=f"{char_name}.yaml 欄位不完整，缺 basic_info 或 speech_patterns")
+
     return data
 
 
