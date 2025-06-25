@@ -1,15 +1,30 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timezone
 import os
 import yaml
 
+"""
+GPT_RP.py — 多角色混戰（N 角色一次回覆）
+------------------------------------------------
+* 依照 `characters: ["erwin", "levi", ...]` 陣列，逐一載入對應 YAML
+* 沒傳 `characters` 時 fallback 到 `DEFAULT_CHAR`
+* 回傳格式：
+  {
+    "replies": [
+        {"name": "erwin", "reply": "..."},
+        {"name": "levi", "reply": "..."}
+    ]
+  }
+* GPT 前端只要把 replies 迭代顯示即可
+"""
+
 # --------------------
 # 常數設定
 # --------------------
-CHAR_DIR = "characters"  # 存放角色卡的資料夾
-DEFAULT_CHAR = "lazul"  # 沒帶 character 時的預設角色
+CHAR_DIR = "characters"       # 存放角色卡的資料夾
+DEFAULT_CHAR = "lazul"        # 沒帶 characters 時的預設角色
 
 # --------------------
 # 資料結構
@@ -17,15 +32,19 @@ DEFAULT_CHAR = "lazul"  # 沒帶 character 時的預設角色
 class MessageIn(BaseModel):
     """使用者輸入結構
 
-    - message: 必填，對角色說的話
-    - character: 選填，不給就用 DEFAULT_CHAR
+    - message:   必填，對角色說的話
+    - characters: 選填，角色 list；若缺則使用 DEFAULT_CHAR
     """
     message: str
-    character: Optional[str] = DEFAULT_CHAR
+    characters: Optional[List[str]] = None
+
+class ReplyAtom(BaseModel):
+    name: str
+    reply: str
 
 class ReplyOut(BaseModel):
-    """API 回傳結構——只回覆角色台詞，保持簡潔給 GPT 朗讀"""
-    reply: str
+    """API 回傳結構──一次回多句"""
+    replies: List[ReplyAtom]
 
 # --------------------
 # 工具函式
@@ -49,7 +68,6 @@ def load_character_yaml(char_name: str):
 
 def pick_reply(char_data: dict, user_msg: str) -> str:
     """根據使用者訊息與角色口吻回傳一句話（簡易範例）"""
-    # 先做非常簡單的情緒偵測
     low = user_msg.lower()
     if any(x in low for x in ("angry", "mad", "怒", "生氣")):
         mood = "angry"
@@ -69,15 +87,20 @@ router = APIRouter()
 
 @router.post(
     "/respond",
-    operation_id="respond_character",  # 🔑 必須與 OpenAPI/Actions 同名
+    operation_id="respond_character",   # 🔑 與 OpenAPI/Actions 同名
     response_model=ReplyOut,
 )
 async def respond(payload: MessageIn):
-    """主要對話入口——GPT 工具會呼叫這裡"""
-    char_name = payload.character or DEFAULT_CHAR
-    char_data = load_character_yaml(char_name)
-    reply_text = pick_reply(char_data, payload.message)
-    return {"reply": reply_text}
+    """主要對話入口──一次處理 N 角色"""
+    char_list = payload.characters or [DEFAULT_CHAR]
+
+    replies: List[ReplyAtom] = []
+    for char_name in char_list:
+        char_data = load_character_yaml(char_name)
+        reply_text = pick_reply(char_data, payload.message)
+        replies.append({"name": char_name, "reply": reply_text})
+
+    return {"replies": replies}
 
 # health 與 list_roles 方便監控 / 除錯
 @router.get("/health")
@@ -92,7 +115,7 @@ async def list_roles():
 # --------------------
 # FastAPI 應用實例
 # --------------------
-app = FastAPI(title="Simple Multi-Character RP", version="1.0.0")
+app = FastAPI(title="Multi‑Character RP", version="1.1.0")
 app.include_router(router)
 
 # --------------------
