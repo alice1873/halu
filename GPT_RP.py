@@ -9,7 +9,7 @@ import yaml
 # 常數設定
 # --------------------
 CHAR_DIR = "characters"  # 存放角色卡的資料夾
-DEFAULT_CHAR = "fan_jiheng"  # 沒帶 character 時的預設角色
+DEFAULT_CHAR = "lazul"  # 沒帶 character 時的預設角色
 
 # --------------------
 # 資料結構
