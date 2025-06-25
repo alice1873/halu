@@ -3,6 +3,8 @@ import os
 from datetime import datetime, timezone
 from fastapi import APIRouter, FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import Optional
+
 import yaml
 
 # 指定角色卡資料夾
@@ -17,6 +19,10 @@ class ReplyOut(BaseModel):
     reply: str
     mood: str
     timestamp: str
+
+class MessageIn(BaseModel):
+    message: str
+    character: Optional[str] = "default"
 
 # --------- 角色卡載入 ---------
 def load_character_yaml(char_name):
