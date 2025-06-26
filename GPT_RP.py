@@ -61,12 +61,13 @@ def load_character_yaml(char_name: str):
     if Path(lc_name).name != lc_name:
         raise HTTPException(status_code=400, detail="非法角色卡路徑！")
 
-    candidates = [CHAR_DIR / f"{lc_name}.yaml", CHAR_DIR / f"{lc_name}.yml"]
-    path = next((p for p in candidates if p.exists()), None)
-    if not path:
+    for ext in (".yaml", ".yml"):
+        candidate = CHAR_DIR / f"{lc_name}{ext}"
+        if candidate.exists():
+            resolved = candidate.resolve()
+            break
+    else:
         raise HTTPException(status_code=404, detail=f"角色卡 {char_name} 不存在！")
-
-    resolved = path.resolve()
     try:
         resolved.relative_to(CHAR_DIR.resolve())
     except ValueError:
