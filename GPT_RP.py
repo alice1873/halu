@@ -119,7 +119,11 @@ async def health():
 
 @router.get("/list_roles")
 async def list_roles():
-    roles = [f[:-5] for f in os.listdir(CHAR_DIR) if f.endswith(".yaml")]
+    roles = []
+    for f in os.listdir(CHAR_DIR):
+        base, ext = os.path.splitext(f)
+        if ext.lower() in (".yaml", ".yml"):
+            roles.append(base)
     return {"roles": roles}
 
 # --------------------
