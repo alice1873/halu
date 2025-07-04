@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone
 from pathlib import Path
+import yaml
 
 """
 GPT_RP.py — 多角色混戰（N 角色一次回覆）
@@ -55,6 +56,50 @@ def load_character_yaml(char_name: str):
     """
     # 支援大小寫與 .yml / .yaml
     lc_name = char_name.lower()
+openapi: 3.1.0
+info:
+  title: Multi-Character RP API
+  version: 1.1.0
+  description: 支援單或多角色；沒帶 characters 時預設用 lazul
+servers:
+  - url: https://gpt-role-play.onrender.com/api   # 後端 APIRouter(prefix="/api")
+paths:
+  /respond:
+    post:
+      operationId: Lauzl             # 與程式一致
+      summary: 讓角色（們）回一句話
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_msg:
+                  type: string
+                  description: 你對角色說的話
+                characters:
+                  type: array
+                  items: { type: string }
+                  description: （可選）指定要回話的角色 ID 陣列
+              required: [user_msg]
+      responses:
+        '200':
+          description: 角色回覆陣列
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  replies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:  { type: string }
+                        reply: { type: string }
+                      required: [name, reply]
+                required: [replies]
 
     # 拒絕含路徑分隔符的輸入，避免逃離角色資料夾
     if Path(lc_name).name != lc_name:
@@ -80,6 +125,7 @@ def load_character_yaml(char_name: str):
         raise HTTPException(status_code=500, detail=f"{char_name}.yaml 欄位不完整，缺 basic_info 或 speech_patterns")
 
     return data
+
 
 def pick_reply(char_data: dict, user_msg: str) -> str:
     """根據使用者訊息與角色口吻回傳一句話（簡易範例）"""
