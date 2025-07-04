@@ -56,50 +56,6 @@ def load_character_yaml(char_name: str):
     """
     # 支援大小寫與 .yml / .yaml
     lc_name = char_name.lower()
-openapi: 3.1.0
-info:
-  title: Multi-Character RP API
-  version: 1.1.0
-  description: 支援單或多角色；沒帶 characters 時預設用 lazul
-servers:
-  - url: https://gpt-role-play.onrender.com/api   # 後端 APIRouter(prefix="/api")
-paths:
-  /respond:
-    post:
-      operationId: Lauzl             # 與程式一致
-      summary: 讓角色（們）回一句話
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_msg:
-                  type: string
-                  description: 你對角色說的話
-                characters:
-                  type: array
-                  items: { type: string }
-                  description: （可選）指定要回話的角色 ID 陣列
-              required: [user_msg]
-      responses:
-        '200':
-          description: 角色回覆陣列
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  replies:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        name:  { type: string }
-                        reply: { type: string }
-                      required: [name, reply]
-                required: [replies]
 
     # 拒絕含路徑分隔符的輸入，避免逃離角色資料夾
     if Path(lc_name).name != lc_name:
