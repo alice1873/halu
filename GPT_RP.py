@@ -10,7 +10,16 @@ from typing import List, Optional, Dict
 
 from fastapi import FastAPI, APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from watchfiles import awatch
+
+# -------------------------------------------------
+# 嘗試載入 watchfiles（用於監看 snippets.yaml）
+# -------------------------------------------------
+try:
+    from watchfiles import awatch  # type: ignore
+    WATCHFILES_AVAILABLE = True
+except ModuleNotFoundError:
+    WATCHFILES_AVAILABLE = False
+    print("[snippets] watchfiles 未安裝，熱更新停用")
 
 # -------------------------------------------------
 # FastAPI 初始化
@@ -24,7 +33,7 @@ router = APIRouter(prefix="/api")
 BASE_DIR: Path = Path(__file__).resolve().parent
 CHAR_DIR: Path = BASE_DIR / "characters"
 SNIPPET_PATH: Path = BASE_DIR / "snippets.yaml"
-DEFAULT_CHAR: str = "lazul"          # 沒帶 characters 時用這隻
+DEFAULT_CHAR: str = "lazul"          # 前端沒帶 characters 時用這隻
 
 # -------------------------------------------------
 # 共用小工具
@@ -50,7 +59,7 @@ def load_character_yaml(char_name: str) -> Dict:
 
 
 def pick_reply(char_data: dict, user_msg: str) -> str:
-    """從 speech_patterns 隨機挑一句，支援 {{name}} 與 {{user_msg}} 佔位符"""
+    """從 speech_patterns 隨機挑一句，支援 {name} 與 {user_msg} 佔位符"""
     patterns = char_data.get("speech_patterns") or []
     if not patterns:
         return "..."
@@ -59,7 +68,7 @@ def pick_reply(char_data: dict, user_msg: str) -> str:
     return tpl.format(name=name, user_msg=user_msg)
 
 # -------------------------------------------------
-# Snippets 熱重載 (watchfiles)
+# Snippets 熱重載
 # -------------------------------------------------
 
 snippets_cache: Dict[str, str] = {}
@@ -74,19 +83,20 @@ def _load_snippets() -> Dict[str, str]:
 
 @app.on_event("startup")
 async def startup():
-    """啟動時先讀 snippets，再開 watchdog 監聽"""
+    """啟動時先讀 snippets；若有裝 watchfiles 就啟動熱更新"""
     global snippets_cache
     snippets_cache = _load_snippets()
 
-    async def _watch():
-        async for _ in awatch(SNIPPET_PATH):
-            try:
-                snippets_cache.update(_load_snippets())
-                print("[snippets] hot‑reloaded ✅")
-            except Exception as e:
-                print("[snippets] reload failed:", e)
+    if WATCHFILES_AVAILABLE:
+        async def _watch():
+            async for _ in awatch(SNIPPET_PATH):
+                try:
+                    snippets_cache.update(_load_snippets())
+                    print("[snippets] hot‑reloaded ✅")
+                except Exception as e:
+                    print("[snippets] reload failed:", e)
 
-    asyncio.create_task(_watch())
+        asyncio.create_task(_watch())
 
 # -------------------------------------------------
 # Pydantic Models
