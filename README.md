@@ -9,6 +9,7 @@ Create a Python environment and install dependencies from `requirements.txt`:
 ```bash
 pip install -r requirements.txt
 ```
+The requirements include FastAPI, uvicorn, PyYAML, Pydantic, and httpx for HTTP requests.
 
 ## Running the Server
 
