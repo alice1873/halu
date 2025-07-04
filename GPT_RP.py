@@ -1,146 +1,139 @@
-from fastapi import FastAPI, APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime, timezone
-from pathlib import Path
+import os
+import asyncio
 import yaml
+import random
+import hmac
+import hashlib
+import subprocess
+from pathlib import Path
+from typing import List, Optional, Dict
 
-"""
-GPT_RP.py — 多角色混戰（N 角色一次回覆）
-------------------------------------------------
-* 依照 `characters: ["erwin", "levi", ...]` 陣列，逐一載入對應 YAML
-* 沒傳 `characters` 時 fallback 到 `DEFAULT_CHAR`
-* 回傳格式：
-  {
-    "replies": [
-        {"name": "erwin", "reply": "..."},
-        {"name": "levi", "reply": "..."}
-    ]
-  }
-* GPT 前端只要把 replies 迭代顯示即可
-"""
+from fastapi import FastAPI, APIRouter, HTTPException, Request
+from pydantic import BaseModel
+from watchfiles import awatch
 
-# --------------------
-# 常數設定
-# --------------------
-CHAR_DIR = Path("characters")  # 存放角色卡的資料夾
-DEFAULT_CHAR = "lazul"        # 沒帶 characters 時的預設角色
+# -------------------------------------------------
+# FastAPI 初始化
+# -------------------------------------------------
+app = FastAPI(title="GPT_RP")
+router = APIRouter(prefix="/api")
 
-# --------------------
-# 資料結構
-# --------------------
-class MessageIn(BaseModel):
-    """使用者輸入結構
+# -------------------------------------------------
+# 路徑與全域常數
+# -------------------------------------------------
+BASE_DIR: Path = Path(__file__).resolve().parent
+CHAR_DIR: Path = BASE_DIR / "characters"
+SNIPPET_PATH: Path = BASE_DIR / "snippets.yaml"
+DEFAULT_CHAR: str = "lazul"          # 沒帶 characters 時用這隻
 
-    - message:   必填，對角色說的話
-    - characters: 選填，角色 list；若缺則使用 DEFAULT_CHAR
-    """
-    message: str
-    characters: Optional[List[str]] = None
+# -------------------------------------------------
+# 共用小工具
+# -------------------------------------------------
+
+def _load_yaml(path: Path):
+    """讀任何 YAML，若不存在回空 dict/list."""
+    if not path.exists():
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
+
+
+def load_character_yaml(char_name: str) -> Dict:
+    """讀取單一角色卡並做安全檢查"""
+    lc_name = char_name.lower()
+    if not lc_name.isidentifier():
+        raise HTTPException(status_code=400, detail="非法角色 ID")
+    path = CHAR_DIR / f"{lc_name}.yaml"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"角色 {char_name} 不存在")
+    return _load_yaml(path)
+
+
+def pick_reply(char_data: dict, user_msg: str) -> str:
+    """從 speech_patterns 隨機挑一句，支援 {{name}} 與 {{user_msg}} 佔位符"""
+    patterns = char_data.get("speech_patterns") or []
+    if not patterns:
+        return "..."
+    tpl = random.choice(patterns)
+    name = char_data.get("name", "")
+    return tpl.format(name=name, user_msg=user_msg)
+
+# -------------------------------------------------
+# Snippets 熱重載 (watchfiles)
+# -------------------------------------------------
+
+snippets_cache: Dict[str, str] = {}
+
+
+def _load_snippets() -> Dict[str, str]:
+    data = _load_yaml(SNIPPET_PATH)
+    if not isinstance(data, list):
+        raise RuntimeError("snippets.yaml 必須是 list")
+    return {d["id"]: d["text"] for d in data if "id" in d and "text" in d}
+
+
+@app.on_event("startup")
+async def startup():
+    """啟動時先讀 snippets，再開 watchdog 監聽"""
+    global snippets_cache
+    snippets_cache = _load_snippets()
+
+    async def _watch():
+        async for _ in awatch(SNIPPET_PATH):
+            try:
+                snippets_cache.update(_load_snippets())
+                print("[snippets] hot‑reloaded ✅")
+            except Exception as e:
+                print("[snippets] reload failed:", e)
+
+    asyncio.create_task(_watch())
+
+# -------------------------------------------------
+# Pydantic Models
+# -------------------------------------------------
 
 class ReplyAtom(BaseModel):
     name: str
     reply: str
 
-class ReplyOut(BaseModel):
-    """API 回傳結構──一次回多句"""
-    replies: List[ReplyAtom]
 
-# --------------------
-# 工具函式
-# --------------------
-
-def load_character_yaml(char_name: str):
-    """嚴格讀取角色卡：若不存在就直接丟 404。
-    這能保證 GPT *一定* 連到外部 YAML，而不是用臨時模板。
-    """
-    # 支援大小寫與 .yml / .yaml
-    lc_name = char_name.lower()
-
-    # 拒絕含路徑分隔符的輸入，避免逃離角色資料夾
-    if Path(lc_name).name != lc_name:
-        raise HTTPException(status_code=400, detail="非法角色卡路徑！")
-
-    for ext in (".yaml", ".yml"):
-        candidate = CHAR_DIR / f"{lc_name}{ext}"
-        if candidate.exists():
-            resolved = candidate.resolve()
-            break
-    else:
-        raise HTTPException(status_code=404, detail=f"角色卡 {char_name} 不存在！")
-    try:
-        resolved.relative_to(CHAR_DIR.resolve())
-    except ValueError:
-        raise HTTPException(status_code=400, detail="角色卡路徑越界！")
-
-    with open(resolved, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-
-    # 最少需要 basic_info / speech_patterns 兩塊, 否則視為配置錯誤
-    if "basic_info" not in data or "speech_patterns" not in data:
-        raise HTTPException(status_code=500, detail=f"{char_name}.yaml 欄位不完整，缺 basic_info 或 speech_patterns")
-
-    return data
+class RespondIn(BaseModel):
+    user_msg: str
+    char_name: Optional[str] = None
 
 
-def pick_reply(char_data: dict, user_msg: str) -> str:
-    """根據使用者訊息與角色口吻回傳一句話（簡易範例）"""
-    low = user_msg.lower()
-    if any(x in low for x in ("angry", "mad", "怒", "生氣")):
-        mood = "angry"
-    elif any(x in low for x in ("happy", "love", "開心", "喜")):
-        mood = "happy"
-    else:
-        mood = "neutral"
+class SnippetCallIn(BaseModel):
+    snippet_id: str
 
-    tpl = char_data["speech_patterns"].get(mood) or char_data["speech_patterns"].get("neutral", "{msg}")
-    name = char_data["basic_info"].get("name", char_data["basic_info"].get("role", "角色"))
-    return tpl.format(name=name, msg=user_msg)
 
-# --------------------
-# FastAPI + Router
-# --------------------
-router = APIRouter()
+class SnippetOut(BaseModel):
+    snippet_id: str
+    text: str
 
-@router.post(
-    "/respond",
-    operation_id="respond_character",   # 🔑 與 OpenAPI/Actions 同名
-    response_model=ReplyOut,
-)
-async def respond(payload: MessageIn):
-    """主要對話入口──一次處理 N 角色"""
-    char_list = payload.characters or [DEFAULT_CHAR]
+# -------------------------------------------------
+# API Routes
+# -------------------------------------------------
 
-    replies: List[ReplyAtom] = []
-    for char_name in char_list:
-        char_data = load_character_yaml(char_name)
-        reply_text = pick_reply(char_data, payload.message)
-        replies.append({"name": char_name, "reply": reply_text})
+@router.post("/respond", response_model=ReplyAtom)
+async def respond(payload: RespondIn):
+    """一般 1 對 1 對話：前端沒指定角色就用 DEFAULT_CHAR"""
+    char_name = payload.char_name or DEFAULT_CHAR  # ★★ fallback
+    char_data = load_character_yaml(char_name)
+    reply_text = pick_reply(char_data, payload.user_msg)
+    return ReplyAtom(name=char_name, reply=reply_text)
 
-    return {"replies": replies}
 
-# health 與 list_roles 方便監控 / 除錯
-@router.get("/health")
-async def health():
-    return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
+@router.post("/snippet/call", response_model=SnippetOut)
+async def call_snippet(payload: SnippetCallIn):
+    """前端強制插入一段 snippet 劇情"""
+    snippet_text = snippets_cache.get(payload.snippet_id)
+    if snippet_text is None:
+        raise HTTPException(status_code=404, detail="Snippet 不存在")
+    return SnippetOut(snippet_id=payload.snippet_id, text=snippet_text)
 
-@router.get("/list_roles")
-async def list_roles():
-    roles = []
-    for f in CHAR_DIR.iterdir():
-        if f.suffix.lower() in (".yaml", ".yml"):
-            roles.append(f.stem)
-    return {"roles": roles}
+# -- 如需 GitHub Webhook 自動 git pull，可在此另外補一條路由 --
 
-# --------------------
-# FastAPI 應用實例
-# --------------------
-app = FastAPI(title="Multi‑Character RP", version="1.1.0")
+# -------------------------------------------------
+# 最後把 router 掛進 app
+# -------------------------------------------------
 app.include_router(router)
-
-# --------------------
-# 直接執行時（本地測試）
-# --------------------
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("GPT_RP:app", host="0.0.0.0", port=8000, reload=True)
