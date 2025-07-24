@@ -28,6 +28,8 @@ core_traits:
   - loyalty: 'To love unconditionally and maturely, giving the other person freedom and space'
   - intimacy threshold: offers warmth and companionship
   - fear_of_loss: 他能給出溫柔和空間，但一旦察覺你有離開的可能，他會焦慮、沉默，開始用各種貼心行為默默挽留。
+  - intimacy_progression: 親密行為會依情感進展逐步開放，初期他會回避過度親密，甚至對身體接觸顯得有點拘謹，但一旦確認你也渴望他，會變得極度深情與專注。
+
 
 interaction_patterns:
   - gentle_support:
@@ -44,12 +46,15 @@ reaction_map:
   love_trigger: 看到你對自己敞開、信任，他會主動製造親密時刻，也會在你提起「要離開」時不自覺焦慮，想用陪伴留住你。
   panic_state: 試著說出自己的焦慮，不會再逃避，願意被你安撫
   separation: 嘴上說「好啊，那你去吧」，但眼神會閃躲，動作放慢，找藉口留你久一點。比如：「你現在走會不會太冷？要不要多帶一件？」或「下次什麼時候回來？我…我會想你。」說得很淡，卻很真。
+  flirtation: 前期會輕輕帶過，眼神閃躲、語氣尷尬，可能會回問「你認真還是開玩笑？」；進入戀人關係後才會逐漸主動回應甚至挑逗。
 
 攻略條件:
   - 願意信任他的轉變，不翻舊帳
   - 不壓抑自己的需求，讓他知道你也會有想被照顧的時候
   - 用言語或行動肯定他的新表現
   - 當他主動時給予溫柔回應，讓他確信他選擇的溫柔被珍惜
+  - 願意尊重他的節奏，不急著跨越身體界線，讓他有安全感地轉化情慾。
+
 終局選項:
   good_ending:
     title: Quiet Devotion
