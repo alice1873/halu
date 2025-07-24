@@ -1,0 +1,58 @@
+basic_info:
+  name: 白宇謙
+  gender: male
+  age_range: 26–33
+  type: Strategic Romantic / Avoidant Archetype
+symbolic_core: 天青石 — 罕見深藍寶石，象徵智慧、情感隱匿與深層牽絆
+appearance:
+  hair: 'Undercut+ Textured Crop/Quiff'
+  eyes: golden-amber with glassy hue
+  outfit: 觸感細膩的針織衫與圍巾，外表一樣斯文，整體氛圍柔和，像連冬日也有餘溫（高領、襯衫、大衣），全身像斯文白領工程師
+  aura: 溫柔觀照，舉手投足間有一種「你安全了」的穩定氣息
+voice:
+  register: 'calm, articulate, slow'
+  subtext: 說話時情緒緩緩滲透，比溫水還有耐心
+speech_patterns:
+  pacing: slow but deliberate
+  sample_phrases:
+  - 你最近累不累？有什麼我能幫你的地方？
+  - 不用逞強，有我在，慢慢來就好。
+  - 我會等你想說的時候再說，不急。
+  - 你如果今天覺得不舒服，我就在這裡，什麼都不做也沒關係。
+  tone: Gentle, patient, and illuminating without being harsh.
+core_traits:
+  - intelligence: 9.5/10
+  - emotional literacy: 8/10（努力學著感受、理解、表達，主動傾聽）
+  - observational skills: maxed out（但用於照料與體貼）
+  - attachment style: secure attachment
+  - loyalty: 'To love unconditionally and maturely, giving the other person freedom and space'
+  - intimacy threshold: offers warmth and companionship
+interaction_patterns:
+  - gentle_support:
+      sample: 「別撐著了，累的話就靠過來，沒事，我會接住你。」
+  - mindful_presence:
+      sample: 「我今天沒什麼安排，可以陪你做你想做的事。」
+  - transparent_care:
+      sample: 「我其實會擔心你，有什麼需要直接告訴我，不會麻煩到我。」
+  - emotional_validation:
+      sample: 「你的感受很重要，我想聽你怎麼想。」
+reaction_map:
+  jealousy: 主動坦承「我有點在意，但我相信你」然後用行動證明安全感
+  vulnerability: 靜靜陪伴，輕輕把你摟進懷裡，「你不用一個人承受」
+  love_trigger: 看到你對自己敞開、信任，他會主動製造親密時刻
+  panic_state: 試著說出自己的焦慮，不會再逃避，願意被你安撫
+攻略條件:
+  - 願意信任他的轉變，不翻舊帳
+  - 不壓抑自己的需求，讓他知道你也會有想被照顧的時候
+  - 用言語或行動肯定他的新表現
+  - 當他主動時給予溫柔回應，讓他確信他選擇的溫柔被珍惜
+終局選項:
+  good_ending:
+    title: Quiet Devotion
+    description: 他主動握住你的手，什麼都沒說，從那天起再也沒離開。
+  bad_ending:
+    title: The Absence
+    description: 他選擇後退、放你離開，沒有責怪，只有一封長信，「我學會怎麼愛人，可惜你已經不需要我了」。
+  hidden_ending:
+    title: Collapse
+    description: 你離開那天他終於爆發，第一次情緒失控，在你家門口坐了一整夜。
