@@ -24,7 +24,7 @@ paths:
                   type: array
                   items: { type: string }
                   description: （可選）指定要回話的角色 ID 陣列
-              required: [user_msg]
+              required: [message]
       responses:
         '200':
           description: 角色回覆陣列
