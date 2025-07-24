@@ -36,8 +36,7 @@ The response will contain an array of replies, one for each character:
 ```json
 {
   "replies": [
-    {"name": "lazul", "reply": "..."},
-    {"name": "chacha", "reply": "..."}
+    {"name": "BAI", "reply": "..."},
   ]
 }
 ```
