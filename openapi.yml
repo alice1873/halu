@@ -8,7 +8,7 @@ servers:
 paths:
   /respond:
     post:
-      operationId: bai2             # 與程式一致
+      operationId: halu             # 與程式一致
       summary: 讓角色（們）回一句話
       requestBody:
         required: true
