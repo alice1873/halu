@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Multi-Character RP API
   version: 1.1.0
-  description: 支援單或多角色；沒帶 characters 時預設用 bai
+  description: 支援單或多角色；沒帶 characters 時預設用 halu
 servers:
   - url: https://gpt-role-play.onrender.com/api   # 後端 APIRouter(prefix="/api")
 paths:
